@@ -55,4 +55,4 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-app.listen(4000, () => console.log("Server running at http://localhost:4000"));
+app.listen(4000, () => console.log("Server running and hosted on Render"));
