@@ -8,7 +8,8 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/", {
+// mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/", {
+mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/?tls=true&retryWrites=true&w=majority", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
