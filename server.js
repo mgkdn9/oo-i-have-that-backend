@@ -8,7 +8,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/", {
+// mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/", { this change may or may not be necessary :)
 mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/?tls=true&retryWrites=true&w=majority", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -16,7 +16,7 @@ mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix
 
 // REGISTER endpoint
 app.post("/api/register", async (req, res) => {
-  const { email, password } = req.body;
+  const { email, firstName, lastName, password } = req.body;
 
   try {
     // Check if user already exists
@@ -28,7 +28,7 @@ app.post("/api/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create and save the user
-    const newUser = new User({ email, password: hashedPassword });
+    const newUser = new User({ email, firstName, lastName, password: hashedPassword });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully" });
@@ -40,6 +40,7 @@ app.post("/api/register", async (req, res) => {
 
 // LOGIN endpoint
 app.post("/api/login", async (req, res) => {
+
   const { email, password } = req.body;
 
   try {
@@ -49,7 +50,7 @@ app.post("/api/login", async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
-    res.json({ message: "Login successful", email: user.email });
+    res.json({ message: "Login successful", email: user.email, firstName: user.firstName, lastName: user.lastName });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error" });
