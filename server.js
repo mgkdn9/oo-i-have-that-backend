@@ -75,4 +75,14 @@ app.post("/api/createToolRequest", async (req, res) => {
   }
 });
 
+app.get("/api/toolRequests", async (req, res) => {
+  try {
+    const toolRequests = await ToolRequest.find();
+    res.json(toolRequests);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch tool requests" });
+  }
+});
+
+
 app.listen(4000, () => console.log("Server running and hosted on Render"));
