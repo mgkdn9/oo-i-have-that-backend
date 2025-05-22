@@ -10,14 +10,26 @@ app.use(cors());
 app.use(express.json());
 
 // mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/", { this change may or may not be necessary :)
-mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/?tls=true&retryWrites=true&w=majority", {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-});
+mongoose.connect(
+  "mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/?tls=true&retryWrites=true&w=majority",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
+);
 
 // REGISTER endpoint
 app.post("/api/register", async (req, res) => {
-  const { email, firstName, lastName, password } = req.body;
+  const {
+    email,
+    firstName,
+    lastName,
+    password,
+    phone,
+    address,
+    latitude,
+    longitude,
+  } = req.body;
 
   try {
     // Check if user already exists
@@ -29,7 +41,16 @@ app.post("/api/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create and save the user
-    const newUser = new User({ email, firstName, lastName, password: hashedPassword });
+    const newUser = new User({
+      email,
+      firstName,
+      lastName,
+      password: hashedPassword,
+      phone,
+      address,
+      latitude,
+      longitude,
+    });
     await newUser.save();
 
     res.status(201).json({ message: "User registered successfully" });
@@ -41,7 +62,6 @@ app.post("/api/register", async (req, res) => {
 
 // LOGIN endpoint
 app.post("/api/login", async (req, res) => {
-
   const { email, password } = req.body;
 
   try {
@@ -51,7 +71,13 @@ app.post("/api/login", async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
-    res.json({ message: "Login successful",  _id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName });
+    res.json({
+      message: "Login successful",
+      _id: user._id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error" });
@@ -60,12 +86,18 @@ app.post("/api/login", async (req, res) => {
 
 // createToolRequest endpoint
 app.post("/api/createToolRequest", async (req, res) => {
-
-  const { title, timeNeeded, firstOfferPrice, pictureUrl, createdBy } = req.body;
+  const { title, timeNeeded, firstOfferPrice, pictureUrl, createdBy } =
+    req.body;
 
   try {
     // Create and save the tool request
-    const newTR = new ToolRequest({ title, timeNeeded, firstOfferPrice, pictureUrl, createdBy });
+    const newTR = new ToolRequest({
+      title,
+      timeNeeded,
+      firstOfferPrice,
+      pictureUrl,
+      createdBy,
+    });
     await newTR.save();
 
     res.status(201).json({ message: "Tool Request created successfully" });
@@ -83,6 +115,5 @@ app.get("/api/toolRequests", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch tool requests" });
   }
 });
-
 
 app.listen(4000, () => console.log("Server running and hosted on Render"));
