@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
 const User = require("./models/User");
+const ToolRequest = require("./models/ToolRequest");
 
 const app = express();
 app.use(cors());
@@ -50,10 +51,27 @@ app.post("/api/login", async (req, res) => {
     const valid = await bcrypt.compare(password, user.password);
     if (!valid) return res.status(401).json({ error: "Invalid password" });
 
-    res.json({ message: "Login successful", email: user.email, firstName: user.firstName, lastName: user.lastName });
+    res.json({ message: "Login successful",  _id: user._id, email: user.email, firstName: user.firstName, lastName: user.lastName });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ error: "Server error" });
+  }
+});
+
+// createToolRequest endpoint
+app.post("/api/createToolRequest", async (req, res) => {
+
+  const { title, timeNeeded, firstOfferPrice, pictureUrl, createdBy } = req.body;
+
+  try {
+    // Create and save the tool request
+    const newTR = new ToolRequest({ title, timeNeeded, firstOfferPrice, pictureUrl, createdBy });
+    await newTR.save();
+
+    res.status(201).json({ message: "Tool Request created successfully" });
+  } catch (err) {
+    console.error("Create Tool Request error:", err);
+    res.status(500).json({ error: "Create Tool Request error" });
   }
 });
 
