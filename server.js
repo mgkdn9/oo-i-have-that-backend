@@ -107,13 +107,66 @@ app.post("/api/createToolRequest", async (req, res) => {
   }
 });
 
-app.get("/api/toolRequests", async (req, res) => {
+app.get("/api/sortedToolRequests", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
   try {
-    const toolRequests = await ToolRequest.find();
-    res.json(toolRequests);
+    // Get the requesting user's coordinates
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const userLat = parseFloat(user.latitude);
+    const userLon = parseFloat(user.longitude);
+
+    // Get all tool requests and populate creator's coordinates
+    const toolRequests = await ToolRequest.find().populate(
+      "createdBy",
+      "latitude longitude"
+    );
+
+    const filteredAndSorted = toolRequests
+      .filter((tr) => tr.createdBy && tr.createdBy._id.toString() !== userId)
+      .map((tr) => {
+        const distanceMi = getDistanceInMiles(
+          userLat,
+          userLon,
+          parseFloat(tr.createdBy.latitude),
+          parseFloat(tr.createdBy.longitude)
+        ).toFixed(2);
+
+        return {
+          ...tr.toObject(),
+          distanceMi,
+        };
+      })
+
+      .sort((a, b) => a.distanceMi - b.distanceMi);
+
+    res.json(filteredAndSorted);
   } catch (err) {
+    console.error("Error fetching tool requests:", err);
     res.status(500).json({ error: "Failed to fetch tool requests" });
   }
 });
+const getDistanceInMiles = (lat1, lon1, lat2, lon2) => {
+  const R = 3958.8; // Earth radius in miles
+  const toRad = (deg) => (deg * Math.PI) / 180;
+
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
+
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+};
 
 app.listen(4000, () => console.log("Server running and hosted on Render"));
