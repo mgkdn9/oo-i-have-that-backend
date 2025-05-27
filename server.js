@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const cors = require("cors");
 const User = require("./models/User");
 const ToolRequest = require("./models/ToolRequest");
+const Response = require("./models/Response");
 
 const app = express();
 app.use(cors());
@@ -18,7 +19,7 @@ mongoose.connect(
   }
 );
 
-// REGISTER endpoint
+// register endpoint
 app.post("/api/register", async (req, res) => {
   const {
     email,
@@ -60,7 +61,7 @@ app.post("/api/register", async (req, res) => {
   }
 });
 
-// LOGIN endpoint
+// login endpoint
 app.post("/api/login", async (req, res) => {
   const { email, password } = req.body;
 
@@ -107,6 +108,7 @@ app.post("/api/createToolRequest", async (req, res) => {
   }
 });
 
+// sortedToolRequests endpoint
 app.get("/api/sortedToolRequests", async (req, res) => {
   const { userId } = req.query;
 
@@ -168,5 +170,22 @@ const getDistanceInMiles = (lat1, lon1, lat2, lon2) => {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 };
+
+// createResponse endpoint
+app.post("/api/createResponse", async (req, res) => {
+  const { originalTR, counterOfferPrice, seeker, owner, timeResponded } =
+    req.body;
+
+  try {
+    // Create and save the tool request
+    const newResponse = new Response({ originalTR, counterOfferPrice, seeker, owner, timeResponded });
+    await newResponse.save();
+
+    res.status(201).json({ message: "TR Response created successfully" });
+  } catch (err) {
+    console.error("Create TR Reponse error:", err);
+    res.status(500).json({ error: "Create TR Reponse error" });
+  }
+});
 
 app.listen(4000, () => console.log("Server running and hosted on Render"));
