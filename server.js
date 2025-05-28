@@ -188,4 +188,27 @@ app.post("/api/createResponse", async (req, res) => {
   }
 });
 
+// myResponses endpoint
+app.get("/api/myResponses", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const responses = await Response.find({ owner: userId })
+      .populate({
+        path: "originalTR",
+        populate: { path: "createdBy", model: "User" } // Also populate the requester (seeker) on the tool request
+      })
+      .populate("owner"); // Populate full owner details
+
+    res.json(responses);
+  } catch (err) {
+    console.error("Error fetching responses:", err);
+    res.status(500).json({ error: "Failed to fetch responses" });
+  }
+});
+
 app.listen(4000, () => console.log("Server running and hosted on Render"));
