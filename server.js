@@ -173,12 +173,12 @@ const getDistanceInMiles = (lat1, lon1, lat2, lon2) => {
 
 // createResponse endpoint
 app.post("/api/createResponse", async (req, res) => {
-  const { originalTR, counterOfferPrice, seeker, owner, timeResponded } =
+  const { originalTR, counterOfferPrice, seeker, owner } =
     req.body;
 
   try {
     // Create and save the tool request
-    const newResponse = new Response({ originalTR, counterOfferPrice, seeker, owner, timeResponded });
+    const newResponse = new Response({ originalTR, counterOfferPrice, seeker, owner });
     await newResponse.save();
 
     res.status(201).json({ message: "TR Response created successfully" });
