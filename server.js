@@ -171,6 +171,25 @@ const getDistanceInMiles = (lat1, lon1, lat2, lon2) => {
   return R * c;
 };
 
+// myRequests endpoint
+app.get("/api/myRequests", async (req, res) => {
+  const { userId } = req.query;
+
+  if (!userId) {
+    return res.status(400).json({ error: "Missing userId" });
+  }
+
+  try {
+    const toolRequests = await ToolRequest.find({ createdBy: userId })
+      .populate("createdBy"); 
+
+    res.json(toolRequests);
+  } catch (err) {
+    console.error("Error fetching toolRequests:", err);
+    res.status(500).json({ error: "Failed to fetch toolRequests" });
+  }
+});
+
 // createResponse endpoint
 app.post("/api/createResponse", async (req, res) => {
   const { originalTR, counterOfferPrice, seeker, owner } =
@@ -210,5 +229,16 @@ app.get("/api/myResponses", async (req, res) => {
     res.status(500).json({ error: "Failed to fetch responses" });
   }
 });
+
+// delete response endpoint
+app.delete("/api/response/:id", async (req, res) => {
+  try {
+    await Response.findByIdAndDelete(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete response" });
+  }
+});
+
 
 app.listen(4000, () => console.log("Server running and hosted on Render"));
