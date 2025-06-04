@@ -7,8 +7,10 @@ Commits to main branch should reflect online.
 
 To Do:
 1. Profile page
-  Show my tool requests
-  Show tool requests I've responded to
+  Edit Request btn
+  Delete Request btn
+  Show when TRs I've responded to have been deleted
 
 2. Make look better
-  Show first name of requester
+
+3. Use env vars

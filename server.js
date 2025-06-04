@@ -180,10 +180,25 @@ app.get("/api/myRequests", async (req, res) => {
   }
 
   try {
-    const toolRequests = await ToolRequest.find({ createdBy: userId })
-      .populate("createdBy"); 
+    const toolRequests = await ToolRequest.find({ createdBy: userId }).populate(
+      "createdBy"
+    );
 
-    res.json(toolRequests);
+    const requestsWithResponses = await Promise.all(
+      toolRequests.map(async (tr) => {
+        // Populate only firstName, _id, and phone
+        const responses = await Response.find({ originalTR: tr._id }).populate(
+          "owner",
+          "firstName _id phone"
+        );
+        return {
+          ...tr.toObject(),
+          responses,
+        };
+      })
+    );
+
+    res.json(requestsWithResponses);
   } catch (err) {
     console.error("Error fetching toolRequests:", err);
     res.status(500).json({ error: "Failed to fetch toolRequests" });
@@ -192,12 +207,16 @@ app.get("/api/myRequests", async (req, res) => {
 
 // createResponse endpoint
 app.post("/api/createResponse", async (req, res) => {
-  const { originalTR, counterOfferPrice, seeker, owner } =
-    req.body;
+  const { originalTR, counterOfferPrice, seeker, owner } = req.body;
 
   try {
     // Create and save the tool request
-    const newResponse = new Response({ originalTR, counterOfferPrice, seeker, owner });
+    const newResponse = new Response({
+      originalTR,
+      counterOfferPrice,
+      seeker,
+      owner,
+    });
     await newResponse.save();
 
     res.status(201).json({ message: "TR Response created successfully" });
@@ -219,7 +238,7 @@ app.get("/api/myResponses", async (req, res) => {
     const responses = await Response.find({ owner: userId })
       .populate({
         path: "originalTR",
-        populate: { path: "createdBy", model: "User" } // Also populate the requester (seeker) on the tool request
+        populate: { path: "createdBy", model: "User" }, // Also populate the requester (seeker) on the tool request
       })
       .populate("owner"); // Populate full owner details
 
@@ -239,6 +258,5 @@ app.delete("/api/response/:id", async (req, res) => {
     res.status(500).json({ error: "Failed to delete response" });
   }
 });
-
 
 app.listen(4000, () => console.log("Server running and hosted on Render"));
