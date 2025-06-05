@@ -8,9 +8,20 @@ Commits to main branch should reflect online.
 To Do:
 1. Profile page
   Edit Request btn
-  Delete Request btn
   Show when TRs I've responded to have been deleted
 
 2. Make look better
+  format phone number
+  make Logout and Profile btns match Home
+  horizontally position p tags in Profile
+  berid of bullet points in ul's
 
-3. Use env vars
+3. Put RENT A TOOL btn at top of all pages
+
+4. Make say something besides React App in tab
+
+5. Show distance to responder under MyTool Requests
+
+6. Persist login info
+
+7. Allow users to change address

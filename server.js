@@ -205,6 +205,16 @@ app.get("/api/myRequests", async (req, res) => {
   }
 });
 
+// delete request endpoint
+app.delete("/api/request/:id", async (req, res) => {
+  try {
+    await ToolRequest.findByIdAndDelete(req.params.id);
+    res.status(204).send();
+  } catch (err) {
+    res.status(500).json({ error: "Failed to delete request" });
+  }
+});
+
 // createResponse endpoint
 app.post("/api/createResponse", async (req, res) => {
   const { originalTR, counterOfferPrice, seeker, owner } = req.body;
