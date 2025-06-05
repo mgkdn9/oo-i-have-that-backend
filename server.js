@@ -108,6 +108,20 @@ app.post("/api/createToolRequest", async (req, res) => {
   }
 });
 
+// edit Tool Request endpoint
+app.put("/api/toolRequests/:id", async (req, res) => {
+  try {
+    const updated = await ToolRequest.findByIdAndUpdate(
+      req.params.id,
+      req.body,
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to update request" });
+  }
+});
+
 // sortedToolRequests endpoint
 app.get("/api/sortedToolRequests", async (req, res) => {
   const { userId } = req.query;

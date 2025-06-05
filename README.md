@@ -7,7 +7,6 @@ Commits to main branch should reflect online.
 
 To Do:
 1. Profile page
-  Edit Request btn
   Show when TRs I've responded to have been deleted
 
 2. Make look better
@@ -25,3 +24,5 @@ To Do:
 6. Persist login info
 
 7. Allow users to change address
+
+8. Protect routes so for instance only owner of tr can edit it
