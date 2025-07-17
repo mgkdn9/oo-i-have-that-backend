@@ -17,7 +17,7 @@ To Do:
 
 3. Put RENT A TOOL btn at top of all pages
 
-4. Make say something besides React App in tab
+4. 
 
 5. Show distance to responder under MyTool Requests
 

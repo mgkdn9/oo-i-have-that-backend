@@ -194,24 +194,48 @@ app.get("/api/myRequests", async (req, res) => {
   }
 
   try {
-    const toolRequests = await ToolRequest.find({ createdBy: userId }).populate(
-      "createdBy"
-    );
+    const requestingUser = await User.findById(userId);
+    if (!requestingUser || !requestingUser.latitude || !requestingUser.longitude) {
+      return res.status(400).json({ error: "User location missing" });
+    }
+
+    const toolRequests = await ToolRequest.find({ createdBy: userId }).populate("createdBy");
 
     const requestsWithResponses = await Promise.all(
       toolRequests.map(async (tr) => {
-        // Populate only firstName, _id, and phone
         const responses = await Response.find({ originalTR: tr._id }).populate(
           "owner",
-          "firstName _id phone"
+          "firstName _id phone latitude longitude"
         );
+
+        const enrichedResponses = responses.map((r) => {
+          const owner = r.owner;
+          let distance = null;
+
+          if (owner?.latitude && owner?.longitude) {
+            distance = getDistanceInMiles(requestingUser.latitude, requestingUser.longitude, owner.latitude, owner.longitude);
+          }
+
+          return {
+            _id: r._id,
+            message: r.message,
+            counterOfferPrice: r.counterOfferPrice,
+            owner: {//Only sends relevant data to front end
+              _id: owner._id,
+              firstName: owner.firstName,
+              phone: owner.phone,
+            },
+            distance: distance !== null ? distance.toFixed(1) : null, // one decimal mile
+            updatedAt: r.updatedAt
+          };
+        });
+
         return {
           ...tr.toObject(),
-          responses,
+          responses: enrichedResponses,
         };
       })
     );
-
     res.json(requestsWithResponses);
   } catch (err) {
     console.error("Error fetching toolRequests:", err);
