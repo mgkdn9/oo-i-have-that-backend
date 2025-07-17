@@ -195,11 +195,17 @@ app.get("/api/myRequests", async (req, res) => {
 
   try {
     const requestingUser = await User.findById(userId);
-    if (!requestingUser || !requestingUser.latitude || !requestingUser.longitude) {
+    if (
+      !requestingUser ||
+      !requestingUser.latitude ||
+      !requestingUser.longitude
+    ) {
       return res.status(400).json({ error: "User location missing" });
     }
 
-    const toolRequests = await ToolRequest.find({ createdBy: userId }).populate("createdBy");
+    const toolRequests = await ToolRequest.find({ createdBy: userId }).populate(
+      "createdBy"
+    );
 
     const requestsWithResponses = await Promise.all(
       toolRequests.map(async (tr) => {
@@ -213,20 +219,26 @@ app.get("/api/myRequests", async (req, res) => {
           let distance = null;
 
           if (owner?.latitude && owner?.longitude) {
-            distance = getDistanceInMiles(requestingUser.latitude, requestingUser.longitude, owner.latitude, owner.longitude);
+            distance = getDistanceInMiles(
+              requestingUser.latitude,
+              requestingUser.longitude,
+              owner.latitude,
+              owner.longitude
+            );
           }
 
           return {
             _id: r._id,
             message: r.message,
             counterOfferPrice: r.counterOfferPrice,
-            owner: {//Only sends relevant data to front end
+            owner: {
+              //Only sends relevant data to front end
               _id: owner._id,
               firstName: owner.firstName,
               phone: owner.phone,
             },
             distance: distance !== null ? distance.toFixed(1) : null, // one decimal mile
-            updatedAt: r.updatedAt
+            updatedAt: r.updatedAt,
           };
         });
 
