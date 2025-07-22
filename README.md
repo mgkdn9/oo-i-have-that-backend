@@ -10,8 +10,6 @@ To Do:
   Show when TRs I've responded to have been deleted
 
 2. Make look better
-  format phone number
-  make Logout and Profile btns match Home
   horizontally position p tags in Profile
   berid of bullet points in ul's
 
@@ -19,7 +17,7 @@ To Do:
 
 4. 
 
-5. Show distance to responder under MyTool Requests
+5. Show distance to responder under My Tool Requests
 
 6. Persist login info
 
