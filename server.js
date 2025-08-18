@@ -54,7 +54,13 @@ app.post("/api/register", async (req, res) => {
     });
     await newUser.save();
 
-    res.status(201).json({ message: "User registered successfully" });
+    // Strip password from returned data
+    const { password: _, ...userWithoutPassword } = newUser.toObject();
+
+    res.status(201).json({
+      message: "User registered successfully",
+      user: userWithoutPassword,
+    })
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json({ error: "Server error" });
