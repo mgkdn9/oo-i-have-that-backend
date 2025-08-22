@@ -2,12 +2,23 @@ const express = require("express");
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const cors = require("cors");
+const axios = require("axios")
 const User = require("./models/User");
 const ToolRequest = require("./models/ToolRequest");
 const Response = require("./models/Response");
 
 const app = express();
 app.use(cors());
+
+// app.use(cors({
+//   origin: ['https://mgkdn9.github.io', 'http://localhost:3000'],// Allow GitHub Pages frontend and localhost
+//   credentials: true, // Optional: if you use cookies/auth
+// }));
+// app.options('*', cors({
+//   origin: ['https://mgkdn9.github.io', 'http://localhost:3000'],
+//   credentials: true,
+// }));
+
 app.use(express.json());
 
 // mongoose.connect("mongodb+srv://mkohlberg95:hKGpQgVvNAoNgNcY@ooihavethat.g3eqyix.mongodb.net/", { this change may or may not be necessary :)
@@ -21,22 +32,33 @@ mongoose.connect(
 
 // register endpoint
 app.post("/api/register", async (req, res) => {
-  const {
-    email,
-    firstName,
-    lastName,
-    password,
-    phone,
-    address,
-    latitude,
-    longitude,
-  } = req.body;
+  const { email, firstName, lastName, password, phone, address } = req.body;
 
   try {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser)
       return res.status(400).json({ error: "User already exists" });
+
+    // Geocode the address server-side with Axios
+    const geoRes = await axios.get(
+      `https://nominatim.openstreetmap.org/search`,
+      {
+        params: { format: "json", q: address },
+        headers: { "User-Agent": "OoIHaveThatApp/1.0" }, // required by Nominatim
+      }
+    );
+
+    const geoData = geoRes.data;
+
+    if (!geoData || geoData.length === 0) {
+      return res
+        .status(400)
+        .json({ error: "Could not geocode the address. Please check it." });
+    }
+
+    const latitude = geoData[0].lat;
+    const longitude = geoData[0].lon;
 
     // Hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -54,7 +76,6 @@ app.post("/api/register", async (req, res) => {
     });
     await newUser.save();
 
-    // Strip password from returned data
     const { password: _, ...userWithoutPassword } = newUser.toObject();
 
     res.status(201).json({
@@ -144,7 +165,6 @@ app.get("/api/sortedToolRequests", async (req, res) => {
       if (!user) {
         return res.status(404).json({ error: "User not found" });
       }
-
       userLat = parseFloat(user.latitude);
       userLon = parseFloat(user.longitude);
     }
@@ -156,7 +176,9 @@ app.get("/api/sortedToolRequests", async (req, res) => {
     );
 
     const filteredAndSorted = toolRequests
+      //Filter out any TRs made by user
       .filter((tr) => tr.createdBy && tr.createdBy._id.toString() !== userId)
+      //Sort by distance
       .map((tr) => {
         const distanceMi = getDistanceInMiles(
           userLat,
