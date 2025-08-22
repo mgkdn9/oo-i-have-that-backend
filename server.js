@@ -60,7 +60,7 @@ app.post("/api/register", async (req, res) => {
     res.status(201).json({
       message: "User registered successfully",
       user: userWithoutPassword,
-    })
+    });
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json({ error: "Server error" });
@@ -130,21 +130,24 @@ app.put("/api/toolRequests/:id", async (req, res) => {
 
 // sortedToolRequests endpoint
 app.get("/api/sortedToolRequests", async (req, res) => {
-  const { userId } = req.query;
-
-  if (!userId) {
-    return res.status(400).json({ error: "Missing userId" });
-  }
-
+  const { userId, localLat, localLon } = req.query;
+  let userLat, userLon;
   try {
-    // Get the requesting user's coordinates
-    const user = await User.findById(userId);
-    if (!user) {
-      return res.status(404).json({ error: "User not found" });
-    }
+    if (!userId && !(localLat && localLon)) {
+      return res.status(400).json({ error: "Missing userId" });
+    } else if (!userId) {
+      userLat = localLat;
+      userLon = localLon;
+    } else {
+      // Get the requesting user's coordinates
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
 
-    const userLat = parseFloat(user.latitude);
-    const userLon = parseFloat(user.longitude);
+      userLat = parseFloat(user.latitude);
+      userLon = parseFloat(user.longitude);
+    }
 
     // Get all tool requests and populate creator's coordinates
     const toolRequests = await ToolRequest.find().populate(
